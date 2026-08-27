@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FullMark Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0a1628;
+    --navy-800:#0f2138;
+    --navy-700:#15304f;
+    --navy-600:#1c3f63;
+    --teal-400:#2dd4bf;
+    --teal-500:#14b8a6;
+    --teal-600:#0d9488;
+    --gold:#d4af37;
+    --text-light:#e8eef5;
+    --text-dim:#8fa3bc;
+    --danger:#e25555;
+    --success:#3ecf8e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Tajawal',sans-serif;
+    background:linear-gradient(160deg,var(--navy-900),#091222 60%);
+    color:var(--text-light);
+    min-height:100vh;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:20px;}
+  header.top{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 0;border-bottom:1px solid var(--navy-700);margin-bottom:24px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .logo{
+    font-family:'Cinzel',serif;font-weight:700;font-size:22px;
+    color:var(--teal-400);letter-spacing:1px;
+  }
+  .brand .tag{font-size:12px;color:var(--text-dim);}
+  #userEmailBox{font-size:13px;color:var(--text-dim);display:flex;align-items:center;gap:10px;}
+  .btn{
+    border:none;border-radius:10px;padding:10px 18px;font-family:'Tajawal',sans-serif;
+    font-weight:700;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--teal-500),var(--teal-600));color:#04201c;}
+  .btn-primary:hover{filter:brightness(1.1);}
+  .btn-ghost{background:var(--navy-700);color:var(--text-light);}
+  .btn-ghost:hover{background:var(--navy-600);}
+  .btn-danger{background:rgba(226,85,85,.15);color:var(--danger);border:1px solid rgba(226,85,85,.4);}
+  .btn-danger:hover{background:rgba(226,85,85,.25);}
+  .btn-small{padding:6px 12px;font-size:12px;border-radius:8px;}
+
+  /* ===== Login screen ===== */
+  #loginScreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+  }
+  .login-card{
+    background:var(--navy-800);border:1px solid var(--navy-700);
+    border-radius:18px;padding:40px 34px;width:100%;max-width:380px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+  }
+  .login-card .logo{
+    font-family:'Cinzel',serif;font-size:28px;color:var(--teal-400);
+    text-align:center;margin-bottom:6px;
+  }
+  .login-card .sub{text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
+  .field input{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--navy-600);
+    background:var(--navy-900);color:var(--text-light);font-family:'Tajawal',sans-serif;font-size:15px;
+  }
+  .field input:focus{outline:none;border-color:var(--teal-500);}
+  #loginBtn{width:100%;margin-top:8px;padding:13px;font-size:15px;}
+  #loginError{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;display:none;}
+
+  /* ===== Tabs ===== */
+  .tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+  .tab-btn{
+    background:var(--navy-800);border:1px solid var(--navy-700);color:var(--text-dim);
+    padding:10px 18px;border-radius:10px;cursor:pointer;font-family:'Tajawal',sans-serif;
+    font-weight:700;font-size:14px;transition:.15s;
+  }
+  .tab-btn.active{background:var(--teal-600);color:#fff;border-color:var(--teal-600);}
+
+  .card{
+    background:var(--navy-800);border:1px solid var(--navy-700);
+    border-radius:16px;padding:22px;margin-bottom:18px;
+  }
+  .card h3{margin:0 0 16px;font-size:17px;color:var(--teal-400);}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+  .row .field{flex:1;min-width:160px;margin-bottom:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:right;color:var(--text-dim);font-weight:700;padding:10px 8px;border-bottom:1px solid var(--navy-700);white-space:nowrap;}
+  td{padding:10px 8px;border-bottom:1px solid var(--navy-700);vertical-align:middle;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-block;}
+  .badge.used{background:rgba(226,85,85,.15);color:var(--danger);}
+  .badge.free{background:rgba(62,207,142,.15);color:var(--success);}
+  .badge.inactive{background:rgba(143,163,188,.15);color:var(--text-dim);}
+  .mono{font-family:monospace;font-size:13px;letter-spacing:.5px;}
+  select,input.inline{
+    background:var(--navy-900);border:1px solid var(--navy-600);color:var(--text-light);
+    border-radius:8px;padding:8px 10px;font-family:'Tajawal',sans-serif;font-size:13.5px;
+  }
+  .editable-name{
+    background:transparent;border:none;border-bottom:1px dashed var(--navy-600);
+    color:var(--text-light);font-family:'Tajawal',sans-serif;font-size:13.5px;width:120px;padding:4px;
+  }
+  .editable-name:focus{outline:none;border-bottom-color:var(--teal-400);}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:18px;}
+  .stat{background:var(--navy-800);border:1px solid var(--navy-700);border-radius:14px;padding:16px;text-align:center;}
+  .stat .num{font-size:26px;font-weight:900;color:var(--teal-400);}
+  .stat .lbl{font-size:12px;color:var(--text-dim);margin-top:4px;}
+  .filter-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .empty-msg{text-align:center;color:var(--text-dim);padding:30px;font-size:14px;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--teal-600);color:#fff;padding:12px 24px;border-radius:12px;
+    font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);
+    z-index:999;opacity:0;transition:.25s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+  .toast.error{background:var(--danger);}
+  .codes-list-box{max-height:520px;overflow-y:auto;}
+  .table-scroll{overflow-x:auto;}
+  #app{display:none;}
+  .copy-icon{cursor:pointer;color:var(--text-dim);}
+  .copy-icon:hover{color:var(--teal-400);}
+  .small-note{font-size:12px;color:var(--text-dim);margin-top:6px;}
+
+  /* ===== طلبات الدفع ===== */
+  .req-card{
+    background:var(--navy-800);border:1px solid var(--navy-700);
+    border-radius:16px;padding:18px;margin-bottom:14px;
+    display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;
+  }
+  .req-card.pending{border-right:4px solid var(--gold);}
+  .req-card.approved{border-right:4px solid var(--success);}
+  .req-card.rejected{border-right:4px solid var(--danger);}
+  .req-info{display:flex;flex-direction:column;gap:6px;}
+  .req-info .req-name{font-size:15px;font-weight:700;color:var(--text-light);}
+  .req-info .req-meta{font-size:13px;color:var(--text-dim);}
+  .req-info .req-email{font-size:13px;color:var(--teal-400);}
+  .req-actions{display:flex;flex-direction:column;gap:8px;min-width:140px;}
+  .req-actions select{width:100%;margin-bottom:4px;}
+  .receipt-thumb{
+    width:60px;height:60px;border-radius:10px;object-fit:cover;
+    cursor:pointer;border:2px solid var(--navy-600);transition:.15s;
+  }
+  .receipt-thumb:hover{border-color:var(--teal-400);}
+  .badge.pending{background:rgba(212,175,55,.15);color:var(--gold);}
+  .badge.approved{background:rgba(62,207,142,.15);color:var(--success);}
+  .badge.rejected{background:rgba(226,85,85,.15);color:var(--danger);}
+  .req-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+
+  /* Modal صورة الإيصال */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;
+    display:flex;align-items:center;justify-content:center;display:none;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-img{max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .modal-close{
+    position:fixed;top:20px;left:20px;background:var(--navy-700);border:none;
+    color:var(--text-light);font-size:22px;width:40px;height:40px;border-radius:50%;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1001;
+  }
+  .req-filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  .pending-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:var(--gold);margin-left:6px;animation:pulse 1.5s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .send-code-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+  .send-code-row select{flex:1;min-width:120px;}
+</style>
+</head>
+<body>
+
+<!-- ===================== شاشة تسجيل الدخول ===================== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="logo">FullMark</div>
+    <div class="sub">الفُل، ولا بلاش — لوحة التحكم</div>
+    <div class="field">
+      <label>الإيميل</label>
+      <input type="email" id="loginEmail" placeholder="example@gmail.com">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary" id="loginBtn">دخول</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ===================== التطبيق الرئيسي ===================== -->
+<div id="app">
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="logo">FullMark</span>
+      <span class="tag">Admin Panel</span>
+    </div>
+    <div id="userEmailBox">
+      <span id="userEmailLabel"></span>
+      <button class="btn btn-ghost btn-small" id="logoutBtn">خروج</button>
+    </div>
+  </header>
+
+  <div class="stat-grid" id="statGrid"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="products">المواد</button>
+    <button class="tab-btn" data-tab="batches">توليد دفعة</button>
+    <button class="tab-btn" data-tab="codes">كل الأكواد</button>
+    <button class="tab-btn" data-tab="revenue">الإيرادات</button>
+    <button class="tab-btn" data-tab="requests" id="requestsTabBtn">طلبات الدفع</button>
+  </div>
+
+  <!-- ===== تبويب المواد ===== -->
+  <div class="tab-panel" id="tab-products">
+    <div class="card">
+      <h3>إضافة مادة جديدة</h3>
+      <div class="row">
+        <div class="field">
+          <label>اسم المادة (كامل، بلا اختصار)</label>
+          <input type="text" id="newProductName" placeholder="مثال: Physiology">
+        </div>
+        <button class="btn btn-primary" id="addProductBtn">إضافة المادة</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>المواد المسجّلة</h3>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>اسم المادة</th><th>الحالة</th><th>تاريخ الإضافة</th><th></th></tr></thead>
+          <tbody id="productsTableBody"></tbody>
+        </table>
+      </div>
+      <div id="productsEmpty" class="empty-msg" style="display:none;">لا توجد مواد مسجّلة بعد</div>
+    </div>
+  </div>
+
+  <!-- ===== تبويب توليد دفعة ===== -->
+  <div class="tab-panel" id="tab-batches" style="display:none;">
+    <div class="card">
+      <h3>توليد دفعة أكواد جديدة</h3>
+      <div class="row">
+        <div class="field">
+          <label>المادة</label>
+          <select id="batchProductSelect"></select>
+        </div>
+        <div class="field">
+          <label>عدد الأكواد</label>
+          <input type="number" id="batchCount" value="10" min="1" max="500">
+        </div>
+        <div class="field">
+          <label>سعر الكود (جنيه)</label>
+          <input type="number" id="batchPrice" placeholder="مثال: 50" min="0" step="0.5">
+        </div>
+        <div class="field">
+          <label>اسم/وصف الدفعة (اختياري)</label>
+          <input type="text" id="batchLabel" placeholder="مثال: دفعة يونيو 2026">
+        </div>
+        <button class="btn btn-primary" id="generateBatchBtn">توليد الأكواد</button>
+      </div>
+      <div class="small-note">كل كود بيتولد عشوائي وفريد، وبيبدأ بأول 3 حروف من اسم المادة. السعر بيتسجّل مع الدفعة، وبيُحسب كإيراد فعلي بس عند استخدام الكود.</div>
+    </div>
+
+    <div class="card" id="lastBatchCard" style="display:none;">
+      <h3>أكواد الدفعة المُولّدة الآن</h3>
+      <div class="row" style="margin-bottom:12px;">
+        <button class="btn btn-ghost btn-small" id="copyAllCodesBtn">نسخ كل الأكواد</button>
+      </div>
+      <div class="table-scroll codes-list-box">
+        <table>
+          <thead><tr><th>الكود</th><th></th></tr></thead>
+          <tbody id="lastBatchTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>سجل الدفعات</h3>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>المادة</th><th>الوصف</th><th>عدد الأكواد</th><th>سعر الكود</th><th>مُستخدم</th><th>الإيراد المحقق</th><th>التاريخ</th><th>إجراء</th></tr></thead>
+          <tbody id="batchesTableBody"></tbody>
+        </table>
+      </div>
+      <div id="batchesEmpty" class="empty-msg" style="display:none;">لا توجد دفعات بعد</div>
+    </div>
+  </div>
+
+  <!-- ===== تبويب كل الأكواد ===== -->
+  <div class="tab-panel" id="tab-codes" style="display:none;">
+    <div class="card">
+      <div class="filter-bar">
+        <select id="filterProduct"><option value="">كل المواد</option></select>
+        <select id="filterStatus">
+          <option value="">كل الحالات</option>
+          <option value="free">غير مستخدم</option>
+          <option value="used">مستخدم</option>
+        </select>
+        <input type="text" id="searchCode" class="inline" placeholder="بحث بالكود أو اسم الطالب...">
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>الكود</th><th>المادة</th><th>اسم الطالب</th><th>الحالة</th><th>تاريخ الاستخدام</th><th>إجراء</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="codesTableBody"></tbody>
+        </table>
+      </div>
+      <div id="codesEmpty" class="empty-msg" style="display:none;">لا توجد أكواد مطابقة</div>
+    </div>
+  </div>
+
+  <!-- ===== تبويب الإيرادات ===== -->
+  <div class="tab-panel" id="tab-revenue" style="display:none;">
+    <div class="card">
+      <div class="filter-bar">
+        <select id="revFilterProduct"><option value="">كل المواد</option></select>
+        <select id="revFilterPeriod">
+          <option value="all">كل الفترات</option>
+          <option value="7">آخر 7 أيام</option>
+          <option value="30">آخر 30 يوم</option>
+        </select>
+      </div>
+      <div class="stat-grid" id="revStatGrid"></div>
+    </div>
+    <div class="card">
+      <h3>تفاصيل الإيراد حسب الدفعة</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>المادة</th><th>الوصف</th><th>سعر الكود</th><th>عدد الأكواد</th><th>مُستخدم</th><th>الإيراد المحقق</th><th>الإيراد المتوقع (لو بيع الكل)</th><th>التاريخ</th>
+            </tr>
+          </thead>
+          <tbody id="revenueTableBody"></tbody>
+        </table>
+      </div>
+      <div id="revenueEmpty" class="empty-msg" style="display:none;">لا توجد بيانات مطابقة</div>
+    </div>
+  </div>
+
+  <!-- ===== تبويب طلبات الدفع ===== -->
+  <div class="tab-panel" id="tab-requests" style="display:none;">
+    <div class="card">
+      <div class="req-filter-bar">
+        <select id="reqFilterStatus" class="inline">
+          <option value="">كل الطلبات</option>
+          <option value="pending">في الانتظار</option>
+          <option value="approved">تمت الموافقة</option>
+          <option value="rejected">مرفوض</option>
+        </select>
+        <select id="reqFilterProduct" class="inline"><option value="">كل المواد</option></select>
+        <span style="font-size:13px;color:var(--text-dim);margin-right:auto;" id="reqCount"></span>
+      </div>
+      <div id="requestsList"></div>
+      <div id="requestsEmpty" class="empty-msg" style="display:none;">لا توجد طلبات بعد</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Modal صورة الإيصال -->
+<div class="modal-overlay" id="receiptModal">
+  <button class="modal-close" id="modalClose">✕</button>
+  <img class="modal-img" id="modalImg" src="" alt="إيصال">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===================== Firebase SDK ===================== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc,
+  updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, deleteField,
+  writeBatch, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getStorage, ref, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBRg9YDGiY0gZ-oHF4hI-qK9GA6Xx8YthU",
+  authDomain: "fullmark-admin.firebaseapp.com",
+  projectId: "fullmark-admin",
+  storageBucket: "fullmark-admin.firebasestorage.app",
+  messagingSenderId: "1036699776",
+  appId: "1:1036699776:web:4b9da54b025c309d51fe65"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+/* ---------- عناصر DOM ---------- */
+const $ = (id) => document.getElementById(id);
+const loginScreen = $('loginScreen');
+const appEl = $('app');
+const toastEl = $('toast');
+
+function showToast(msg, isError=false){
+  toastEl.textContent = msg;
+  toastEl.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(()=> toastEl.className = 'toast', 2200);
+}
+
+/* ---------- تسجيل الدخول ---------- */
+$('loginBtn').addEventListener('click', async () => {
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  $('loginError').style.display = 'none';
+  if(!email || !password){ return; }
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+  }catch(err){
+    $('loginError').textContent = 'بيانات الدخول غلط أو فيه مشكلة في الاتصال';
+    $('loginError').style.display = 'block';
+  }
+});
+
+$('logoutBtn').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    loginScreen.style.display = 'none';
+    appEl.style.display = 'block';
+    $('userEmailLabel').textContent = user.email;
+    loadAll();
+  } else {
+    loginScreen.style.display = 'flex';
+    appEl.style.display = 'none';
+  }
+});
+
+/* ---------- التبويبات ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+    $('tab-' + btn.dataset.tab).style.display='block';
+  });
+});
+
+/* ---------- حالة محلية ---------- */
+let PRODUCTS = [];   // {id, name, active, createdAt}
+let CODES = [];      // {id(=code), productId, productName, batchId, used, deviceId, studentName, usedAt}
+let BATCHES = [];    // {id, productId, productName, label, codeCount, createdAt}
+let REQUESTS = [];   // {id, studentName, studentEmail, productId, productName, receiptUrl, status, createdAt, codeId}
+
+async function loadAll(){
+  await Promise.all([loadProducts(), loadCodes(), loadBatches(), loadRequests()]);
+  renderStats();
+  renderProducts();
+  renderBatchProductSelect();
+  renderFilterProductSelect();
+  renderBatchesTable();
+  renderCodesTable();
+  renderRevenueProductSelect();
+  renderRevenueTab();
+  renderRequestsFilterProduct();
+  renderRequests();
+  updateRequestsTabBadge();
+}
+
+/* ---------- تحميل البيانات ---------- */
+async function loadProducts(){
+  const snap = await getDocs(collection(db,'products'));
+  PRODUCTS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+}
+async function loadCodes(){
+  const snap = await getDocs(collection(db,'codes'));
+  CODES = snap.docs.map(d => ({id:d.id, ...d.data()}));
+}
+async function loadBatches(){
+  const snap = await getDocs(collection(db,'batches'));
+  BATCHES = snap.docs.map(d => ({id:d.id, ...d.data()}));
+  BATCHES.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+}
+
+/* ---------- الإحصائيات ---------- */
+function renderStats(){
+  const total = CODES.length;
+  const used = CODES.filter(c=>c.used).length;
+  const free = total - used;
+  const totalRevenue = CODES.filter(c=>c.used).reduce((sum,c)=> sum + (c.pricePerCode||0), 0);
+  $('statGrid').innerHTML = `
+    <div class="stat"><div class="num">${PRODUCTS.length}</div><div class="lbl">عدد المواد</div></div>
+    <div class="stat"><div class="num">${total}</div><div class="lbl">إجمالي الأكواد</div></div>
+    <div class="stat"><div class="num">${used}</div><div class="lbl">أكواد مستخدمة</div></div>
+    <div class="stat"><div class="num">${free}</div><div class="lbl">أكواد متاحة</div></div>
+    <div class="stat"><div class="num">${totalRevenue.toLocaleString('ar-EG')} ج</div><div class="lbl">الإيراد الكلي</div></div>
+  `;
+}
+
+/* ---------- المواد ---------- */
+function slugify(name){
+  return name.trim().toLowerCase()
+    .replace(/[^a-z0-9\s-]/g,'')   // إزالة أي رموز غير إنجليزية/أرقام
+    .replace(/\s+/g,'-')            // المسافات → -
+    .replace(/-+/g,'-');            // تكرار - واحدة بس
+}
+
+$('addProductBtn').addEventListener('click', async () => {
+  const name = $('newProductName').value.trim();
+  if(!name){ showToast('اكتب اسم المادة الأول', true); return; }
+  if(PRODUCTS.some(p=>p.name.toLowerCase()===name.toLowerCase())){
+    showToast('المادة دي موجودة بالفعل', true); return;
+  }
+  let slug = slugify(name);
+  if(!slug){ showToast('اسم المادة لازم يحتوي على حروف إنجليزية', true); return; }
+  if(PRODUCTS.some(p=>p.id===slug)){
+    showToast('فيه مادة بنفس الـ ID ده، غيّر الاسم شوية', true); return;
+  }
+  await setDoc(doc(db,'products',slug), {
+    name, active:true, createdAt: serverTimestamp()
+  });
+  showToast(`تمت إضافة المادة بنجاح — الـ ID بتاعها: ${slug}`);
+  $('newProductName').value='';
+  await loadAll();
+});
+
+function renderProducts(){
+  const tbody = $('productsTableBody');
+  tbody.innerHTML='';
+  $('productsEmpty').style.display = PRODUCTS.length ? 'none' : 'block';
+  PRODUCTS.forEach(p=>{
+    const dateStr = p.createdAt?.seconds ? new Date(p.createdAt.seconds*1000).toLocaleDateString('ar-EG') : '-';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(p.name)}<br><span class="mono" style="color:var(--text-dim);font-size:11px;">ID: ${escapeHtml(p.id)}</span></td>
+      <td><span class="badge ${p.active?'free':'inactive'}">${p.active?'فعّالة':'متوقفة'}</span></td>
+      <td>${dateStr}</td>
+      <td>
+        <button class="btn btn-ghost btn-small toggle-active" data-id="${p.id}">${p.active?'إيقاف':'تفعيل'}</button>
+        <button class="btn btn-danger btn-small delete-product" data-id="${p.id}">حذف</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.toggle-active').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const p = PRODUCTS.find(x=>x.id===btn.dataset.id);
+      await updateDoc(doc(db,'products',p.id), {active: !p.active});
+      showToast('تم تحديث حالة المادة');
+      await loadAll();
+    });
+  });
+  tbody.querySelectorAll('.delete-product').forEach(btn=>{
+    btn.addEventListener('click', ()=> deleteProduct(btn.dataset.id));
+  });
+}
+
+async function deleteProduct(productId){
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if(!p) return;
+
+  const relatedCodes = CODES.filter(c=>c.productId===productId);
+  const usedCodes = relatedCodes.filter(c=>c.used);
+  const relatedBatches = BATCHES.filter(b=>b.productId===productId);
+
+  let warning = `هل أنت متأكد من حذف المادة "${p.name}"؟`;
+  if(relatedCodes.length){
+    warning += `\n\n⚠️ يوجد ${relatedCodes.length} كود مرتبط بهذه المادة (منهم ${usedCodes.length} مستخدم من طلاب فعليين).`;
+    warning += `\nحذف المادة لن يحذف الأكواد تلقائيًا، لكنها ستبقى بدون مادة مرتبطة بها في الجدول.`;
+  }
+  if(relatedBatches.length){
+    warning += `\n\nستفقد أيضًا تتبّع ${relatedBatches.length} دفعة مرتبطة بهذه المادة في تبويب الإيرادات.`;
+  }
+  warning += `\n\nهذا الإجراء لا يمكن التراجع عنه.`;
+
+  if(!confirm(warning)) return;
+
+  if(usedCodes.length > 0){
+    if(!confirm(`تنبيه نهائي: فيه ${usedCodes.length} طالب فعليًا مفعّل بأكواد المادة دي. تأكيد الحذف؟`)) return;
+  }
+
+  try{
+    await deleteDoc(doc(db,'products',productId));
+    showToast('تم حذف المادة');
+    await loadAll();
+  }catch(err){
+    console.error(err);
+    showToast('حصل خطأ أثناء حذف المادة: ' + (err.message||''), true);
+  }
+}
+
+/* ---------- توليد كود عشوائي ---------- */
+function generateCodeString(productName){
+  const prefix = productName.replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase() || 'FLM';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let rand = '';
+  for(let i=0;i<6;i++) rand += chars[Math.floor(Math.random()*chars.length)];
+  return `${prefix}-${rand}`;
+}
+
+/* ---------- توليد دفعة ---------- */
+function renderBatchProductSelect(){
+  const sel = $('batchProductSelect');
+  sel.innerHTML = PRODUCTS.filter(p=>p.active).map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+}
+
+$('generateBatchBtn').addEventListener('click', async () => {
+  const productId = $('batchProductSelect').value;
+  const count = parseInt($('batchCount').value);
+  const price = parseFloat($('batchPrice').value);
+  const label = $('batchLabel').value.trim();
+  if(!productId){ showToast('لازم تضيف مادة الأول', true); return; }
+  if(!count || count<1 || count>500){ showToast('عدد الأكواد غير صحيح', true); return; }
+  if(isNaN(price) || price<0){ showToast('سعر الكود غير صحيح', true); return; }
+
+  const product = PRODUCTS.find(p=>p.id===productId);
+  $('generateBatchBtn').disabled = true;
+  $('generateBatchBtn').textContent = 'جاري التوليد...';
+
+  try{
+    const batchRef = await addDoc(collection(db,'batches'), {
+      productId, productName: product.name, label: label || '-',
+      codeCount: count, pricePerCode: price, createdAt: serverTimestamp()
+    });
+
+    const generatedCodes = [];
+    const existingCodes = new Set(CODES.map(c=>c.id));
+    for(let i=0;i<count;i++){
+      let code;
+      do { code = generateCodeString(product.name); } while(existingCodes.has(code));
+      existingCodes.add(code);
+      generatedCodes.push(code);
+      await setDoc(doc(db,'codes',code), {
+        productId, productName: product.name, batchId: batchRef.id,
+        studentName: '', used:false, deviceId:'', usedAt:null, loggedOutAt:null,
+        pricePerCode: price, createdAt: serverTimestamp()
+      });
+    }
+
+    showLastBatch(generatedCodes);
+    $('batchLabel').value='';
+    $('batchPrice').value='';
+    showToast(`تم توليد ${count} كود بنجاح`);
+    await loadAll();
+  }catch(err){
+    showToast('حصل خطأ أثناء التوليد', true);
+    console.error(err);
+  }finally{
+    $('generateBatchBtn').disabled = false;
+    $('generateBatchBtn').textContent = 'توليد الأكواد';
+  }
+});
+
+function showLastBatch(codes){
+  $('lastBatchCard').style.display='block';
+  const tbody = $('lastBatchTableBody');
+  tbody.innerHTML = codes.map(c=>`
+    <tr><td class="mono">${c}</td><td><span class="copy-icon" data-code="${c}">📋 نسخ</span></td></tr>
+  `).join('');
+  tbody.querySelectorAll('.copy-icon').forEach(span=>{
+    span.addEventListener('click', ()=> copyToClipboard(span.dataset.code, 'تم نسخ الكود'));
+  });
+  window.__lastBatchCodes = codes;
+}
+
+/* ---------- دالة نسخ موحّدة وقوية مع fallback ---------- */
+async function copyToClipboard(text, successMsg){
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      showToast(successMsg);
+      return;
+    }
+    throw new Error('clipboard API غير متاحة');
+  }catch(err){
+    // Fallback: عنصر textarea مؤقت + execCommand
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok){
+        showToast(successMsg);
+      } else {
+        showToast('تعذّر النسخ التلقائي — انسخ الكود يدويًا', true);
+      }
+    }catch(err2){
+      showToast('تعذّر النسخ التلقائي — انسخ الكود يدويًا', true);
+    }
+  }
+}
+
+$('copyAllCodesBtn').addEventListener('click', ()=>{
+  if(window.__lastBatchCodes){
+    copyToClipboard(window.__lastBatchCodes.join('\n'), 'تم نسخ كل الأكواد');
+  }
+});
+
+
+function renderBatchesTable(){
+  const tbody = $('batchesTableBody');
+  tbody.innerHTML='';
+  $('batchesEmpty').style.display = BATCHES.length ? 'none':'block';
+  BATCHES.forEach(b=>{
+    const dateStr = b.createdAt?.seconds ? new Date(b.createdAt.seconds*1000).toLocaleDateString('ar-EG') : '-';
+    const usedCount = CODES.filter(c=>c.batchId===b.id && c.used).length;
+    const price = b.pricePerCode ?? 0;
+    const revenue = usedCount * price;
+    tbody.innerHTML += `
+      <tr>
+        <td>${escapeHtml(b.productName||'-')}</td>
+        <td>${escapeHtml(b.label||'-')}</td>
+        <td>${b.codeCount}</td>
+        <td>${price ? price.toLocaleString('ar-EG') + ' ج' : '-'}</td>
+        <td>${usedCount}</td>
+        <td>${revenue.toLocaleString('ar-EG')} ج</td>
+        <td>${dateStr}</td>
+        <td><button class="btn btn-danger btn-small delete-batch" data-id="${b.id}">حذف</button></td>
+      </tr>
+    `;
+  });
+  tbody.querySelectorAll('.delete-batch').forEach(btn=>{
+    btn.addEventListener('click', ()=> deleteBatch(btn.dataset.id));
+  });
+}
+
+async function deleteBatch(batchId){
+  const b = BATCHES.find(x=>x.id===batchId);
+  if(!b) return;
+
+  const batchCodes = CODES.filter(c=>c.batchId===batchId);
+  const usedCodes = batchCodes.filter(c=>c.used);
+  const freeCodes = batchCodes.filter(c=>!c.used);
+
+  let warning = `حذف دفعة "${b.label||b.id}" (${b.productName||'-'})؟\n\n`;
+  warning += `سيتم حذف ${freeCodes.length} كود غير مستخدم نهائيًا.`;
+  if(usedCodes.length){
+    warning += `\n\n⚠️ يوجد ${usedCodes.length} كود من هذه الدفعة مستخدم فعليًا من طلاب — هذه الأكواد لن تُحذف وستبقى كما هي لحماية الطلاب المفعّلين، لكنها ستفقد الربط بسجل الدفعة (سطر الدفعة سيُحذف من السجل وستفقد تتبّع إيراداتها هنا).`;
+  }
+  warning += `\n\nهذا الإجراء لا يمكن التراجع عنه.`;
+
+  if(!confirm(warning)) return;
+  if(usedCodes.length > 0){
+    if(!confirm(`تأكيد نهائي: متابعة حذف الدفعة مع وجود ${usedCodes.length} كود مستخدم بداخلها؟`)) return;
+  }
+
+  try{
+    const wb = writeBatch(db);
+    freeCodes.forEach(c=> wb.delete(doc(db,'codes',c.id)));
+    wb.delete(doc(db,'batches',batchId));
+    await wb.commit();
+    showToast('تم حذف الدفعة والأكواد غير المستخدمة بها');
+    await loadAll();
+  }catch(err){
+    console.error(err);
+    showToast('حصل خطأ أثناء حذف الدفعة: ' + (err.message||''), true);
+  }
+}
+
+/* ---------- تبويب كل الأكواد ---------- */
+function renderFilterProductSelect(){
+  const sel = $('filterProduct');
+  sel.innerHTML = `<option value="">كل المواد</option>` +
+    PRODUCTS.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+}
+
+['filterProduct','filterStatus','searchCode'].forEach(id=>{
+  $(id).addEventListener('input', renderCodesTable);
+  $(id).addEventListener('change', renderCodesTable);
+});
+
+function renderCodesTable(){
+  const fp = $('filterProduct').value;
+  const fs = $('filterStatus').value;
+  const fq = $('searchCode').value.trim().toLowerCase();
+
+  let list = CODES.slice();
+  if(fp) list = list.filter(c=>c.productId===fp);
+  if(fs==='used') list = list.filter(c=>c.used);
+  if(fs==='free') list = list.filter(c=>!c.used);
+  if(fq) list = list.filter(c=>
+    c.id.toLowerCase().includes(fq) || (c.studentName||'').toLowerCase().includes(fq)
+  );
+  list.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+  const tbody = $('codesTableBody');
+  tbody.innerHTML='';
+  $('codesEmpty').style.display = list.length ? 'none':'block';
+
+  list.forEach(c=>{
+    const dateStr = c.usedAt?.seconds ? new Date(c.usedAt.seconds*1000).toLocaleDateString('ar-EG') : '-';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="mono">${c.id} <span class="copy-icon" data-code="${c.id}" title="نسخ الكود">📋</span></td>
+      <td>${escapeHtml(c.productName||'-')}</td>
+      <td><input type="text" class="editable-name" data-code="${c.id}" value="${escapeHtml(c.studentName||'')}" placeholder="اكتب اسم الطالب"></td>
+      <td><span class="badge ${c.used?'used':'free'}">${c.used?'مستخدم':'غير مستخدم'}</span></td>
+      <td>${dateStr}</td>
+      <td>${c.used ? `<button class="btn btn-danger btn-small logout-btn" data-code="${c.id}">تسجيل خروج</button>` : '<span style="color:var(--text-dim);font-size:12px;">-</span>'}</td>
+      <td>${!c.used ? `<button class="btn btn-danger btn-small delete-code" data-code="${c.id}" title="حذف الكود">🗑️</button>` : ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.copy-icon').forEach(span=>{
+    span.addEventListener('click', ()=> copyToClipboard(span.dataset.code, 'تم نسخ الكود'));
+  });
+
+  tbody.querySelectorAll('.editable-name').forEach(inp=>{
+    inp.addEventListener('change', async ()=>{
+      await updateDoc(doc(db,'codes',inp.dataset.code), {studentName: inp.value.trim()});
+      const c = CODES.find(x=>x.id===inp.dataset.code);
+      if(c) c.studentName = inp.value.trim();
+      showToast('تم حفظ اسم الطالب');
+    });
+  });
+
+  tbody.querySelectorAll('.logout-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(!confirm(`تسجيل خروج الكود ${btn.dataset.code}؟ هيرجع كإنه لم يُستخدم من قبل.`)) return;
+      await updateDoc(doc(db,'codes',btn.dataset.code), {
+        used:false, deviceId:'', usedAt:null, loggedOutAt: serverTimestamp()
+      });
+      showToast('تم تسجيل الخروج، الكود متاح للاستخدام من جديد');
+      await loadAll();
+    });
+  });
+
+  tbody.querySelectorAll('.delete-code').forEach(btn=>{
+    btn.addEventListener('click', ()=> deleteSingleCode(btn.dataset.code));
+  });
+}
+
+async function deleteSingleCode(codeId){
+  const c = CODES.find(x=>x.id===codeId);
+  if(!c) return;
+  if(c.used){ showToast('لا يمكن حذف كود مستخدم — سجّل خروجه أولاً', true); return; }
+  if(c.assignedTo){
+    if(!confirm(`الكود ده محجوز/مرسل لـ "${c.assignedTo}" بس لسه مش مستخدم على جهاز. تأكيد الحذف؟`)) return;
+  } else {
+    if(!confirm(`حذف الكود "${codeId}"؟ لا يمكن التراجع.`)) return;
+  }
+  try{
+    await deleteDoc(doc(db,'codes',codeId));
+    showToast('تم حذف الكود');
+    await loadAll();
+  }catch(err){
+    console.error(err);
+    showToast('حصل خطأ أثناء حذف الكود: ' + (err.message||''), true);
+  }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+/* ---------- تبويب الإيرادات ---------- */
+function renderRevenueProductSelect(){
+  const sel = $('revFilterProduct');
+  const current = sel.value;
+  sel.innerHTML = `<option value="">كل المواد</option>` +
+    PRODUCTS.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  sel.value = current;
+}
+
+function getPeriodCutoff(){
+  const val = $('revFilterPeriod').value;
+  if(val==='all') return null;
+  const days = parseInt(val);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  return cutoff.getTime()/1000;
+}
+
+function renderRevenueTab(){
+  const fp = $('revFilterProduct').value;
+  const cutoffSec = getPeriodCutoff();
+
+  // أكواد مستخدمة (مبيعات فعلية) بعد الفلترة
+  let usedCodes = CODES.filter(c=>c.used);
+  if(fp) usedCodes = usedCodes.filter(c=>c.productId===fp);
+  if(cutoffSec){
+    usedCodes = usedCodes.filter(c=> (c.usedAt?.seconds||0) >= cutoffSec );
+  }
+
+  const totalRevenue = usedCodes.reduce((s,c)=> s + (c.pricePerCode||0), 0);
+  const soldCount = usedCodes.length;
+  const avgPrice = soldCount ? (totalRevenue/soldCount) : 0;
+
+  $('revStatGrid').innerHTML = `
+    <div class="stat"><div class="num">${totalRevenue.toLocaleString('ar-EG')} ج</div><div class="lbl">إيراد فعلي (مبيعات)</div></div>
+    <div class="stat"><div class="num">${soldCount}</div><div class="lbl">عدد الأكواد المباعة</div></div>
+    <div class="stat"><div class="num">${avgPrice.toLocaleString('ar-EG',{maximumFractionDigits:1})} ج</div><div class="lbl">متوسط سعر الكود</div></div>
+  `;
+
+  // جدول الدفعات (مفلتر بالمادة بس، الفترة بتاعة الدفعة نفسها مش وقت الإنشاء وليس الاستخدام)
+  let batches = BATCHES.slice();
+  if(fp) batches = batches.filter(b=>b.productId===fp);
+
+  const tbody = $('revenueTableBody');
+  tbody.innerHTML='';
+  $('revenueEmpty').style.display = batches.length ? 'none':'block';
+
+  batches.forEach(b=>{
+    const dateStr = b.createdAt?.seconds ? new Date(b.createdAt.seconds*1000).toLocaleDateString('ar-EG') : '-';
+    const batchCodes = CODES.filter(c=>c.batchId===b.id);
+    let usedInBatch = batchCodes.filter(c=>c.used);
+    if(cutoffSec) usedInBatch = usedInBatch.filter(c=> (c.usedAt?.seconds||0) >= cutoffSec);
+    const price = b.pricePerCode ?? 0;
+    const revenue = usedInBatch.length * price;
+    const potential = b.codeCount * price;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${escapeHtml(b.productName||'-')}</td>
+        <td>${escapeHtml(b.label||'-')}</td>
+        <td>${price ? price.toLocaleString('ar-EG') + ' ج' : '-'}</td>
+        <td>${b.codeCount}</td>
+        <td>${usedInBatch.length}</td>
+        <td>${revenue.toLocaleString('ar-EG')} ج</td>
+        <td>${potential.toLocaleString('ar-EG')} ج</td>
+        <td>${dateStr}</td>
+      </tr>
+    `;
+  });
+}
+
+$('revFilterProduct').addEventListener('change', renderRevenueTab);
+$('revFilterPeriod').addEventListener('change', renderRevenueTab);
+
+/* ============================================================
+   تبويب طلبات الدفع
+   ============================================================ */
+
+// Telegram Bot config
+const TELEGRAM_BOT_TOKEN = '8643479138:AAFn8OTr207dd8cyZzWDWRfd6X-zB_5DfOw';
+const TELEGRAM_ADMIN_CHAT_ID = '6504431408';
+
+async function sendTelegramMessage(chatId, productName, code){
+  const text = `🎉 *مبروك! تم تفعيل اشتراكك*\n\n📚 المادة: *${productName}*\n\n🔑 كود الدخول الخاص بك:\n\`${code}\`\n\n⚠️ *تنبيه مهم:*\nالكود ده بيتفعل على جهاز واحد فقط ولا يمكن نقله. في حالة تغيير الجهاز تواصل معنا.\n\nافتح ملف المادة واستعن بالله وربنا يوفقك يا دكتور 🤍\n\n*FullMark* الفل ولا بلاش 💪`;
+  
+  const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'Markdown'
+    })
+  });
+  if(!res.ok){
+    const err = await res.json();
+    throw new Error(err.description || 'Telegram error');
+  }
+}
+
+async function loadRequests(){
+  const snap = await getDocs(collection(db,'paymentRequests'));
+  REQUESTS = snap.docs.map(d=>({id:d.id,...d.data()}));
+  REQUESTS.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+}
+
+function updateRequestsTabBadge(){
+  const pending = REQUESTS.filter(r=>r.status==='pending').length;
+  const btn = $('requestsTabBtn');
+  btn.innerHTML = pending > 0
+    ? `طلبات الدفع <span class="pending-dot"></span><span style="font-size:11px;background:rgba(212,175,55,.25);color:var(--gold);padding:2px 7px;border-radius:10px;margin-right:4px;">${pending}</span>`
+    : 'طلبات الدفع';
+}
+
+function renderRequestsFilterProduct(){
+  const sel = $('reqFilterProduct');
+  sel.innerHTML = `<option value="">كل المواد</option>` +
+    PRODUCTS.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+}
+
+['reqFilterStatus','reqFilterProduct'].forEach(id=>{
+  $(id).addEventListener('change', renderRequests);
+});
+
+function renderRequests(){
+  const fs = $('reqFilterStatus').value;
+  const fp = $('reqFilterProduct').value;
+  let list = REQUESTS.slice();
+  if(fs) list = list.filter(r=>r.status===fs);
+  if(fp) list = list.filter(r=> r.productId===fp || (PRODUCTS.find(p=>p.id===fp)?.name === r.productName));
+
+  $('reqCount').textContent = `${list.length} طلب`;
+  $('requestsEmpty').style.display = list.length ? 'none' : 'block';
+  const container = $('requestsList');
+  container.innerHTML = '';
+
+  list.forEach(req=>{
+    const dateStr = req.createdAt?.seconds
+      ? new Date(req.createdAt.seconds*1000).toLocaleString('ar-EG') : '-';
+    const statusLabel = {pending:'في الانتظار', approved:'تمت الموافقة', rejected:'مرفوض'}[req.status] || req.status;
+
+    // أكواد متاحة لهذه المادة
+    const freeCodes = CODES.filter(c=>
+      !c.used && !c.assignedTo && (
+        c.productId === req.productId ||
+        (req.productName && c.productName === req.productName)
+      )
+    );
+    const freeOptions = freeCodes.map(c=>`<option value="${c.id}">${c.id}</option>`).join('');
+
+    const div = document.createElement('div');
+    div.className = `req-card ${req.status}`;
+    div.dataset.id = req.id;
+    div.innerHTML = `
+      <div class="req-info">
+        <div class="req-top">
+          <span class="req-name">${escapeHtml(req.studentName||'بدون اسم')}</span>
+          <span class="badge ${req.status}">${statusLabel}</span>
+        </div>
+        <div class="req-email">📧 ${escapeHtml(req.studentEmail||'-')} &nbsp;|&nbsp; 📲 ${escapeHtml(req.telegramUsername||'بدون تليجرام')}</div>
+        <div class="req-meta">📚 ${escapeHtml(req.productName||'-')} &nbsp;|&nbsp; 🕐 ${dateStr}</div>
+        ${req.codeId ? `<div class="req-meta" style="color:var(--success);">✅ الكود المُرسل: <span class="mono">${escapeHtml(req.codeId)}</span></div>` : ''}
+        ${req.status==='pending' ? `
+        <div class="send-code-row">
+          <select id="codeSelect_${req.id}" class="inline">
+            <option value="">— اختر كوداً —</option>
+            ${freeOptions}
+          </select>
+          <button class="btn btn-primary btn-small approve-btn" data-id="${req.id}">موافقة وإرسال الكود</button>
+          <button class="btn btn-danger btn-small reject-btn" data-id="${req.id}">رفض</button>
+        </div>
+        ${freeCodes.length===0 ? '<div style="color:var(--danger);font-size:12px;margin-top:4px;">⚠️ لا توجد أكواد متاحة لهذه المادة — ولّد دفعة جديدة أولاً</div>' : ''}
+        ` : ''}
+      </div>
+      ${req.receiptUrl ? `
+      <div>
+        <img class="receipt-thumb" src="${escapeHtml(req.receiptUrl)}" alt="إيصال" title="اضغط لتكبير الصورة">
+      </div>` : '<div style="color:var(--text-dim);font-size:12px;">لا توجد صورة</div>'}
+    `;
+    container.appendChild(div);
+  });
+
+  // أحداث صور الإيصالات
+  container.querySelectorAll('.receipt-thumb').forEach(img=>{
+    img.addEventListener('click', ()=>{
+      $('modalImg').src = img.src;
+      $('receiptModal').classList.add('open');
+    });
+  });
+
+  // زر الموافقة
+  container.querySelectorAll('.approve-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> approveRequest(btn.dataset.id));
+  });
+
+  // زر الرفض
+  container.querySelectorAll('.reject-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> rejectRequest(btn.dataset.id));
+  });
+}
+
+async function approveRequest(reqId){
+  const req = REQUESTS.find(r=>r.id===reqId);
+  if(!req) return;
+  const codeId = $(`codeSelect_${reqId}`)?.value;
+  if(!codeId){ showToast('اختر كوداً أولاً', true); return; }
+
+  if(!confirm(`إرسال الكود "${codeId}" لـ ${req.telegramUsername||req.studentName}؟`)) return;
+
+  // تعطيل فوري لمنع الضغط المزدوج / الموافقة على نفس الطلب مرتين
+  const approveBtn = document.querySelector(`.approve-btn[data-id="${reqId}"]`);
+  const rejectBtn = document.querySelector(`.reject-btn[data-id="${reqId}"]`);
+  if(approveBtn){ approveBtn.disabled = true; approveBtn.textContent = 'جاري الإرسال...'; }
+  if(rejectBtn){ rejectBtn.disabled = true; }
+
+  try{
+    // 0. حجز الكود أولاً عبر Transaction — يمنع استخدام نفس الكود مرتين
+    //    حتى لو حصلت موافقة مزدوجة (دبل كليك) أو طلبين في نفس الوقت
+    await runTransaction(db, async (tx) => {
+      const codeRef = doc(db,'codes',codeId);
+      const codeSnap = await tx.get(codeRef);
+      if(!codeSnap.exists()) throw new Error('الكود ده غير موجود');
+      const codeData = codeSnap.data();
+      if(codeData.used || codeData.assignedTo){
+        throw new Error('الكود ده تم حجزه أو استخدامه بالفعل من شخص تاني — اختر كود آخر');
+      }
+      const reqRef = doc(db,'paymentRequests',reqId);
+      const reqSnap = await tx.get(reqRef);
+      if(!reqSnap.exists()) throw new Error('الطلب ده غير موجود');
+      if(reqSnap.data().status !== 'pending'){
+        throw new Error('الطلب ده تمت معالجته بالفعل');
+      }
+      // حجز الكود فورًا (قبل إرسال التليجرام) لقفل أي محاولة موافقة تانية
+      tx.update(codeRef, {
+        assignedTo: req.telegramUsername || req.studentName || '',
+        assignedAt: serverTimestamp(),
+        studentName: req.studentName || ''
+      });
+      tx.update(reqRef, {
+        status: 'approved',
+        codeId,
+        approvedAt: serverTimestamp()
+      });
+    });
+
+    // 1. إرسال الكود عبر Telegram (بعد ما الكود اتحجز بنجاح)
+    const telegramUsername = req.telegramUsername || '';
+    if(!telegramUsername) throw new Error('مفيش يوزر تليجرام للطالب ده — الكود محجوز بس لازم تبعته يدويًا');
+
+    const username = telegramUsername.replace('@','').toLowerCase();
+    const kvRes = await fetch(`https://fullmark-bot.amrdoctor88.workers.dev/?username=${username}`);
+    const kvData = await kvRes.json();
+    if(!kvData.chatId) throw new Error(`الطالب لم يبعت /start للبوت بعد — يوزر: @${username} — الكود محجوز ومتاح في بيانات الطلب`);
+    await sendTelegramMessage(kvData.chatId, req.productName, codeId);
+
+    showToast('✅ تم إرسال الكود بنجاح');
+    await loadAll();
+  }catch(err){
+    console.error(err);
+    showToast('حصل خطأ: ' + (err.text||err.message||''), true);
+    await loadAll(); // إعادة تحميل لتحديث حالة الأزرار والأكواد المتاحة فعليًا
+  }
+}
+
+async function rejectRequest(reqId){
+  if(!confirm('رفض الطلب ده؟')) return;
+  await updateDoc(doc(db,'paymentRequests',reqId), {
+    status: 'rejected',
+    rejectedAt: serverTimestamp()
+  });
+  showToast('تم رفض الطلب');
+  await loadAll();
+}
+
+// Modal إغلاق
+$('modalClose').addEventListener('click', ()=> $('receiptModal').classList.remove('open'));
+$('receiptModal').addEventListener('click', (e)=>{
+  if(e.target === $('receiptModal')) $('receiptModal').classList.remove('open');
+});
+
+</script>
+
+<!-- Brevo: لا يحتاج SDK خارجي -->
+</body>
+</html>
