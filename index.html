@@ -254,15 +254,21 @@
           <label>وصف مختصر (هيظهر في الكارت للطالب)</label>
           <input type="text" id="newProductDesc" placeholder="المحتوى + خريطة ذهنية + بنك أسئلة">
         </div>
-        <button class="btn btn-primary" id="addProductBtn">إضافة المادة</button>
       </div>
-      <div class="small-note">تقدر تضيف المادة من غير رابط أو سعر دلوقتي وترجع تظبطهم بعدين من الجدول تحت.</div>
+      <div class="row" style="margin-top:12px;">
+        <div class="field" style="flex:1;">
+          <label>المحاضرات (اختياري — سطر لكل محاضرة، بالصيغة: الاسم | الرابط)</label>
+          <textarea id="newProductLectures" rows="3" placeholder="مقدمة في المادة | https://...&#10;المحاضرة التانية | https://...&#10;المحاضرة التالتة" style="width:100%;resize:vertical;font-family:'Tajawal',sans-serif;padding:8px 10px;border-radius:6px;"></textarea>
+        </div>
+        <button class="btn btn-primary" id="addProductBtn" style="align-self:flex-end;">إضافة المادة</button>
+      </div>
+      <div class="small-note">تقدر تضيف المادة من غير رابط أو سعر دلوقتي وترجع تظبطهم بعدين من الجدول تحت. المحاضرات دي هتظهر كقائمة قابلة للفتح جوه كارت المادة في صفحة الكتالوج — مش منتج منفصل، الاشتراك لسه مادة واحدة بسعر واحد. لو محاضرة معملهاش لينك، هتظهر كاسم بس من غير رابط.</div>
     </div>
     <div class="card">
       <h3>المواد المسجّلة</h3>
       <div class="table-scroll">
         <table>
-          <thead><tr><th>اسم المادة</th><th>الكلية</th><th>الرابط</th><th>السعر</th><th>الوصف</th><th>تظهر في الكتالوج؟</th><th>حالة الأكواد</th></tr></thead>
+          <thead><tr><th>اسم المادة</th><th>الكلية</th><th>الرابط</th><th>السعر</th><th>الوصف</th><th>المحاضرات</th><th>تظهر في الكتالوج؟</th><th>حالة الأكواد</th></tr></thead>
           <tbody id="productsTableBody"></tbody>
         </table>
       </div>
@@ -656,12 +662,28 @@ function slugify(name){
     .replace(/-+/g,'-');            // تكرار - واحدة بس
 }
 
+// كل سطر في textarea المحاضرات بيتحول لـ {name, link}
+// الصيغة: اسم المحاضرة | الرابط (الرابط اختياري)
+function parseLecturesInput(text){
+  return text.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    const parts = line.split('|');
+    return { name: parts[0].trim(), link: (parts[1]||'').trim() };
+  });
+}
+function lecturesToTextarea(lectures){
+  return (lectures||[]).map(l=>{
+    if(typeof l === 'string') return l; // توافق مع بيانات قديمة (مجرد اسم من غير لينك)
+    return l.link ? `${l.name} | ${l.link}` : l.name;
+  }).join('\n');
+}
+
 $('addProductBtn').addEventListener('click', async () => {
   const name = $('newProductName').value.trim();
   const facultyId = $('newProductFaculty').value;
   const link = $('newProductLink').value.trim();
   const priceRaw = $('newProductPrice').value.trim();
   const description = $('newProductDesc').value.trim();
+  const lectures = parseLecturesInput($('newProductLectures').value);
   if(!name){ showToast('اكتب اسم المادة الأول', true); return; }
   if(PRODUCTS.some(p=>p.name.toLowerCase()===name.toLowerCase())){
     showToast('المادة دي موجودة بالفعل', true); return;
@@ -677,11 +699,13 @@ $('addProductBtn').addEventListener('click', async () => {
     link: link || '',
     price: priceRaw ? Number(priceRaw) : null,
     description: description || '',
+    lectures: lectures,
     showInCatalog: true
   });
   showToast(`تمت إضافة المادة بنجاح — الـ ID بتاعها: ${slug}`);
   $('newProductName').value=''; $('newProductLink').value='';
   $('newProductPrice').value=''; $('newProductDesc').value='';
+  $('newProductLectures').value='';
   await loadAll();
 });
 
@@ -702,6 +726,7 @@ function renderProducts(){
       <td><input type="text" class="editable-name field-link" data-id="${p.id}" value="${escapeHtml(p.link||'')}" placeholder="رابط المادة" style="width:150px;"></td>
       <td><input type="number" class="editable-name field-price" data-id="${p.id}" value="${p.price ?? ''}" placeholder="السعر" style="width:70px;"></td>
       <td><input type="text" class="editable-name field-desc" data-id="${p.id}" value="${escapeHtml(p.description||'')}" placeholder="وصف مختصر" style="width:150px;"></td>
+      <td><textarea class="editable-name field-lectures" data-id="${p.id}" rows="3" placeholder="اسم المحاضرة | الرابط" style="width:170px;resize:vertical;font-family:'Tajawal',sans-serif;">${escapeHtml(lecturesToTextarea(p.lectures))}</textarea></td>
       <td>
         <span class="badge ${showInCatalog?'free':'inactive'}">${showInCatalog?'ظاهرة':'مخفية'}</span>
         <button class="btn btn-ghost btn-small toggle-catalog" data-id="${p.id}" style="margin-top:6px;">${showInCatalog?'إخفاء':'إظهار'}</button>
@@ -727,6 +752,12 @@ function renderProducts(){
   });
   tbody.querySelectorAll('.field-desc').forEach(el=>{
     el.addEventListener('blur', ()=> updateDoc(doc(db,'products',el.dataset.id), {description: el.value.trim()}).then(()=>showToast('تم الحفظ')));
+  });
+  tbody.querySelectorAll('.field-lectures').forEach(el=>{
+    el.addEventListener('blur', ()=> {
+      const lectures = parseLecturesInput(el.value);
+      updateDoc(doc(db,'products',el.dataset.id), {lectures}).then(()=>showToast('تم الحفظ'));
+    });
   });
   tbody.querySelectorAll('.toggle-catalog').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
