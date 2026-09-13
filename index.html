@@ -112,6 +112,19 @@
     color:var(--text-light);font-family:'Tajawal',sans-serif;font-size:13.5px;width:120px;padding:4px;
   }
   .editable-name:focus{outline:none;border-bottom-color:var(--teal-400);}
+  .lectures-editor-panel{
+    background:var(--navy-900);border:1px solid var(--navy-700);border-radius:10px;
+    padding:12px;margin:6px 0;
+  }
+  .lecture-row-edit{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .lecture-row-edit .lec-name-input{flex:1;min-width:0;}
+  .lecture-row-edit .lec-link-input{flex:1;min-width:0;}
+  .lecture-row-edit input{
+    background:var(--navy-800);border:1px solid var(--navy-600);color:var(--text-light);
+    border-radius:6px;padding:7px 9px;font-family:'Tajawal',sans-serif;font-size:13px;
+  }
+  .lecture-row-edit input:focus{outline:none;border-color:var(--teal-400);}
+  .lecture-row-edit .remove-lecture-row{flex-shrink:0;}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:18px;}
   .stat{background:var(--navy-800);border:1px solid var(--navy-700);border-radius:14px;padding:16px;text-align:center;}
   .stat .num{font-size:26px;font-weight:900;color:var(--teal-400);}
@@ -257,8 +270,9 @@
       </div>
       <div class="row" style="margin-top:12px;">
         <div class="field" style="flex:1;">
-          <label>المحاضرات (اختياري — سطر لكل محاضرة، بالصيغة: الاسم | الرابط)</label>
-          <textarea id="newProductLectures" rows="3" placeholder="مقدمة في المادة | https://...&#10;المحاضرة التانية | https://...&#10;المحاضرة التالتة" style="width:100%;resize:vertical;font-family:'Tajawal',sans-serif;padding:8px 10px;border-radius:6px;"></textarea>
+          <label>المحاضرات (اختياري — كل محاضرة ليها خانة اسم وخانة لينك منفصلة، وتقدر تضيف واحدة بس دلوقتي وتزوّد بعدين من الجدول تحت)</label>
+          <div id="newProductLecturesRows"></div>
+          <button type="button" class="btn btn-ghost btn-small" id="newProductAddLectureRow" style="margin-top:4px;">+ إضافة محاضرة</button>
         </div>
         <button class="btn btn-primary" id="addProductBtn" style="align-self:flex-end;">إضافة المادة</button>
       </div>
@@ -662,20 +676,54 @@ function slugify(name){
     .replace(/-+/g,'-');            // تكرار - واحدة بس
 }
 
-// كل سطر في textarea المحاضرات بيتحول لـ {name, link}
-// الصيغة: اسم المحاضرة | الرابط (الرابط اختياري)
-function parseLecturesInput(text){
-  return text.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
-    const parts = line.split('|');
-    return { name: parts[0].trim(), link: (parts[1]||'').trim() };
+// كل محاضرة بقت {name, link} بدل السطر المدمج بـ "|"
+function normalizeLecture(l){
+  return typeof l === 'string' ? {name:l, link:''} : {name:l.name||'', link:l.link||''};
+}
+function createLectureRowHTML(name='', link=''){
+  return `
+    <div class="lecture-row-edit">
+      <input type="text" class="lec-name-input" placeholder="اسم المحاضرة" value="${escapeHtml(name)}">
+      <input type="text" class="lec-link-input" placeholder="رابط المحاضرة (اختياري)" value="${escapeHtml(link)}">
+      <button type="button" class="btn btn-danger btn-small remove-lecture-row">🗑</button>
+    </div>
+  `;
+}
+function wireLectureRowsContainer(container){
+  if(container.dataset.wired) return;
+  container.dataset.wired = '1';
+  container.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.remove-lecture-row');
+    if(!btn) return;
+    const rows = container.querySelectorAll('.lecture-row-edit');
+    if(rows.length <= 1){
+      const row = btn.closest('.lecture-row-edit');
+      row.querySelector('.lec-name-input').value='';
+      row.querySelector('.lec-link-input').value='';
+    } else {
+      btn.closest('.lecture-row-edit').remove();
+    }
   });
 }
-function lecturesToTextarea(lectures){
-  return (lectures||[]).map(l=>{
-    if(typeof l === 'string') return l; // توافق مع بيانات قديمة (مجرد اسم من غير لينك)
-    return l.link ? `${l.name} | ${l.link}` : l.name;
-  }).join('\n');
+function renderLectureRows(container, lectures){
+  const list = (lectures && lectures.length) ? lectures.map(normalizeLecture) : [{name:'',link:''}];
+  container.innerHTML = list.map(l=>createLectureRowHTML(l.name, l.link)).join('');
+  wireLectureRowsContainer(container);
 }
+function readLecturesFromContainer(container){
+  const result = [];
+  container.querySelectorAll('.lecture-row-edit').forEach(row=>{
+    const name = row.querySelector('.lec-name-input').value.trim();
+    const link = row.querySelector('.lec-link-input').value.trim();
+    if(name) result.push({name, link});
+  });
+  return result;
+}
+
+renderLectureRows($('newProductLecturesRows'), []);
+$('newProductAddLectureRow').addEventListener('click', ()=>{
+  $('newProductLecturesRows').insertAdjacentHTML('beforeend', createLectureRowHTML());
+});
 
 $('addProductBtn').addEventListener('click', async () => {
   const name = $('newProductName').value.trim();
@@ -683,7 +731,7 @@ $('addProductBtn').addEventListener('click', async () => {
   const link = $('newProductLink').value.trim();
   const priceRaw = $('newProductPrice').value.trim();
   const description = $('newProductDesc').value.trim();
-  const lectures = parseLecturesInput($('newProductLectures').value);
+  const lectures = readLecturesFromContainer($('newProductLecturesRows'));
   if(!name){ showToast('اكتب اسم المادة الأول', true); return; }
   if(PRODUCTS.some(p=>p.name.toLowerCase()===name.toLowerCase())){
     showToast('المادة دي موجودة بالفعل', true); return;
@@ -705,7 +753,7 @@ $('addProductBtn').addEventListener('click', async () => {
   showToast(`تمت إضافة المادة بنجاح — الـ ID بتاعها: ${slug}`);
   $('newProductName').value=''; $('newProductLink').value='';
   $('newProductPrice').value=''; $('newProductDesc').value='';
-  $('newProductLectures').value='';
+  renderLectureRows($('newProductLecturesRows'), []);
   await loadAll();
 });
 
@@ -719,6 +767,7 @@ function renderProducts(){
 
   PRODUCTS.forEach(p=>{
     const showInCatalog = p.showInCatalog !== false; // افتراضي true لو مش متسجل
+    const lectureCount = (p.lectures||[]).length;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${escapeHtml(p.name)}<br><span class="mono" style="color:var(--text-dim);font-size:11px;">ID: ${escapeHtml(p.id)}</span></td>
@@ -726,7 +775,7 @@ function renderProducts(){
       <td><input type="text" class="editable-name field-link" data-id="${p.id}" value="${escapeHtml(p.link||'')}" placeholder="رابط المادة" style="width:150px;"></td>
       <td><input type="number" class="editable-name field-price" data-id="${p.id}" value="${p.price ?? ''}" placeholder="السعر" style="width:70px;"></td>
       <td><input type="text" class="editable-name field-desc" data-id="${p.id}" value="${escapeHtml(p.description||'')}" placeholder="وصف مختصر" style="width:150px;"></td>
-      <td><textarea class="editable-name field-lectures" data-id="${p.id}" rows="3" placeholder="اسم المحاضرة | الرابط" style="width:170px;resize:vertical;font-family:'Tajawal',sans-serif;">${escapeHtml(lecturesToTextarea(p.lectures))}</textarea></td>
+      <td><button type="button" class="btn btn-ghost btn-small toggle-lectures" data-id="${p.id}">المحاضرات (${lectureCount})</button></td>
       <td>
         <span class="badge ${showInCatalog?'free':'inactive'}">${showInCatalog?'ظاهرة':'مخفية'}</span>
         <button class="btn btn-ghost btn-small toggle-catalog" data-id="${p.id}" style="margin-top:6px;">${showInCatalog?'إخفاء':'إظهار'}</button>
@@ -738,6 +787,24 @@ function renderProducts(){
       </td>
     `;
     tbody.appendChild(tr);
+
+    const editorTr = document.createElement('tr');
+    editorTr.className = 'lectures-editor-row';
+    editorTr.dataset.id = p.id;
+    editorTr.style.display = 'none';
+    editorTr.innerHTML = `
+      <td colspan="8">
+        <div class="lectures-editor-panel">
+          <div class="lectures-editor-rows" data-id="${p.id}"></div>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="btn btn-ghost btn-small add-lecture-row" data-id="${p.id}">+ إضافة محاضرة</button>
+            <button type="button" class="btn btn-primary btn-small save-lectures" data-id="${p.id}">حفظ المحاضرات</button>
+          </div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(editorTr);
+    renderLectureRows(editorTr.querySelector('.lectures-editor-rows'), p.lectures);
   });
 
   // حفظ تلقائي لما الأدمن يخرج من أي خانة (blur) أو يغيّر السيلكت
@@ -753,10 +820,28 @@ function renderProducts(){
   tbody.querySelectorAll('.field-desc').forEach(el=>{
     el.addEventListener('blur', ()=> updateDoc(doc(db,'products',el.dataset.id), {description: el.value.trim()}).then(()=>showToast('تم الحفظ')));
   });
-  tbody.querySelectorAll('.field-lectures').forEach(el=>{
-    el.addEventListener('blur', ()=> {
-      const lectures = parseLecturesInput(el.value);
-      updateDoc(doc(db,'products',el.dataset.id), {lectures}).then(()=>showToast('تم الحفظ'));
+  tbody.querySelectorAll('.toggle-lectures').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const row = tbody.querySelector(`.lectures-editor-row[data-id="${btn.dataset.id}"]`);
+      row.style.display = row.style.display === 'none' ? '' : 'none';
+    });
+  });
+  tbody.querySelectorAll('.add-lecture-row').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const container = tbody.querySelector(`.lectures-editor-rows[data-id="${btn.dataset.id}"]`);
+      container.insertAdjacentHTML('beforeend', createLectureRowHTML());
+    });
+  });
+  tbody.querySelectorAll('.save-lectures').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const container = tbody.querySelector(`.lectures-editor-rows[data-id="${btn.dataset.id}"]`);
+      const lectures = readLecturesFromContainer(container);
+      await updateDoc(doc(db,'products',btn.dataset.id), {lectures});
+      const p = PRODUCTS.find(x=>x.id===btn.dataset.id);
+      if(p) p.lectures = lectures;
+      const toggleBtn = tbody.querySelector(`.toggle-lectures[data-id="${btn.dataset.id}"]`);
+      if(toggleBtn) toggleBtn.textContent = `المحاضرات (${lectures.length})`;
+      showToast('تم حفظ المحاضرات');
     });
   });
   tbody.querySelectorAll('.toggle-catalog').forEach(btn=>{
